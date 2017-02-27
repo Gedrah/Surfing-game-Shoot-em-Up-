@@ -22,11 +22,10 @@ function love.keypressed(key)
     love.event.quit()
   end
   if (key == "a") then
-    if (activated == 0) then
-      activated = 1
-      proj_x = player_x - player_width
-      proj_y = player_y + player_width
-    end
+    proj_y = player_y + player_height    
+  end
+  if (key == "e") then
+    projboss_y = projboss_y + 10
   end
 end
 
@@ -36,12 +35,16 @@ function love.load()
   background_music = love.audio.newSource("media/surf.ogg", "stream")
   player_animation()
   boss_animation()
+  beam_animation()
   proj_animation()
   play_music()
 end
 
 function love.update(dt)
   time = time + dt
+  for i,v in ipairs(projPlayer) do
+		v.y = v.y - (v.dy + speed)
+	end
   animation_management()
   wave_scrolling()
   player_command()
@@ -50,11 +53,11 @@ end
 function love.draw()
   love.graphics.draw(background, 0, 0)
   love.graphics.draw(waves, wave_x, wave_y)
+  create_tears()
   love.graphics.draw(player, playerSprite[activeFrame], player_x, player_y)
-  love.graphics.draw(boss, bossSprite[bossFrame], boss_x, boss_y, 0, 3)
-  if (activated == 1) then
-    love.graphics.draw(player_proj, projSprite[projframe], proj_x, proj_y, -1.57)
-  end
+  love.graphics.draw(boss, bossSprite[bossFrame], boss_x, boss_y, 0, 5)
+  love.graphics.draw(boss_proj, projbossSprite[projbossframe], projboss_x, projboss_y, 1.57)
+  love.graphics.draw(boss_beam, beamSprite[beamFrame], beam_x, beam_y, 3.15, 1, 6)
   love.graphics.print(tostring(wave_y), 0, 0)
 end
 
@@ -77,22 +80,24 @@ function animation_management()
     activeFrame = activeFrame + 1
     projframe = projframe + 1
     bossFrame = bossFrame + 1
+    beamFrame = beamFrame - 1
+    projbossframe = projbossframe + 1
     time = 0
   end
   if (activeFrame > 3) then
     activeFrame = 1
   end
-  if (projframe > 5) then
-    projframe = 4
+  if (projbossframe > 5) then
+    projbossframe = 4
   end
-  if (activated == 1) then
-    proj_y = proj_y - 10
-  end
-  if (proj_y < 0) then
-    activated = 0
-    proj_y = player_y + player_height
-  end
-  if (bossFrame > 4) then
+  if (bossFrame > 3) then
     bossFrame = 1
+  end
+  if (beamFrame < 1) then
+    beamFrame = 10
+  end
+  projboss_y = projboss_y + 5
+  if (projboss_y > love.graphics.getHeight()) then
+    projboss_y = boss_y + boss_height * 5 
   end
 end
